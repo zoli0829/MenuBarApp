@@ -11,7 +11,7 @@ struct SystemStats {
     static func getCPUUsage() -> Double {
         var kr: kern_return_t
         var count = mach_msg_type_number_t(MemoryLayout<host_cpu_load_info_data_t>.stride / MemoryLayout<integer_t>.stride)
-        var size = MemoryLayout<host_cpu_load_info_data_t>.stride
+        let size = MemoryLayout<host_cpu_load_info_data_t>.stride
         var cpuInfo = host_cpu_load_info()
         
         kr = withUnsafeMutablePointer(to: &cpuInfo) {
@@ -34,26 +34,51 @@ struct SystemStats {
         
         return (totalUsed / totalTicks) * 100
     }
-
-    static func getMemoryUsage() -> (used: Double, total: Double)? {
+    
+    /// Retrieves the current memory usage percentage of the system.
+    ///
+    /// - Returns: An `Int` representing the percentage of used memory, or `nil` if the system call fails.
+    static func getMemoryUsage() -> Int? {
+        // Create a structure to hold virtual memory statistics
         var stats = vm_statistics64()
-        var count = HOST_VM_INFO64 // og was HOST_VM_INFO64_COUNT
         
+        // Determine the number of fields in the structure, expressed as a count of integer_t values
+        var count = mach_msg_type_number_t(MemoryLayout<vm_statistics64_data_t>.stride / MemoryLayout<integer_t>.stride)
+        
+        // Call host_statistics64 to fill `stats` with current virtual memory statistics
         let result = withUnsafeMutablePointer(to: &stats) {
             $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
                 host_statistics64(mach_host_self(), HOST_VM_INFO64, $0, &count)
             }
         }
         
+        // If the system call failed, return nil
         guard result == KERN_SUCCESS else { return nil }
         
-        let pageSize = vm_page_size
-        let used = Double(stats.active_count + stats.inactive_count + stats.wire_count) * Double(pageSize)
-        let total = Double(stats.active_count + stats.inactive_count + stats.wire_count + stats.free_count) * Double(pageSize)
+        // Get the system’s memory page size (in bytes)
+        var pageSize: vm_size_t = 0
+        host_page_size(mach_host_self(), &pageSize)
         
-        return (used, total)
+        // Convert various memory page counts to bytes by multiplying by page size
+        let active = Double(stats.active_count) * Double(pageSize)   // Actively used memory
+        let wired = Double(stats.wire_count)  * Double(pageSize)    // Wired (non-swappable) memory
+        let free = Double(stats.free_count)  * Double(pageSize)    // Completely unused memory
+        let inactive = Double(stats.inactive_count) * Double(pageSize) // Reclaimable memory
+        
+        // Calculate total used memory as active + wired
+        let used = active + wired
+        
+        // Calculate total memory as sum of used, free, and inactive memory
+        let total = used + free + inactive
+        
+        // Compute percentage of used memory
+        let usagePercent = (used / total) * 100
+        
+        // Return memory usage percentage as an integer
+        return Int(usagePercent)
     }
-
+    
+    
     static func getDiskUsage() -> (free: Double, total: Double)? {
         let fileURL = URL(fileURLWithPath: "/")
         

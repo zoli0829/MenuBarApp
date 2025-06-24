@@ -15,22 +15,36 @@ struct StatsDetailView: View {
             let freeString = String(format: "%.2f", freeGB) + " GB"
             let totalString = String(format: "%.2f", totalGB) + " GB"
             
-            return Text("Free: \(freeString), Total: \(totalString)")
+            let freeText = Text("\(freeString)")
+                .foregroundColor(freeGB >= 10 ? .green : .red)
+            let totalText = Text(", Total: \(totalString)")
+            
+            return Text ("Free: ") + freeText + totalText
         } else {
             return Text("N/A")
         }
     }
     
     var cpuUsageText: Text {
-        Text("CPU: ") + Text(String(format: "%.2f%%", SystemStats.getCPUUsage()))
+        let cpuUsage = SystemStats.getCPUUsage()
+        return Text("CPU: ") + Text(String(format: "%.2f%%", cpuUsage))
+            .foregroundColor(cpuUsage < 90 ? .green : .red)
+    }
+    
+    var memoryUsageText: some View {
+        if let memoryUsage = SystemStats.getMemoryUsage() {
+            return Text("RAM: ") + Text("\(memoryUsage)%")
+                .foregroundColor(memoryUsage < 90 ? .green : .red)
+        } else {
+            return Text("N/A")
+        }
     }
     
     var body: some View {
         HStack(spacing: 10) {
             cpuUsageText
+            memoryUsageText
             diskUsageText
-            
-            Text("Here comes the memory usage")
         }
     }
 }
