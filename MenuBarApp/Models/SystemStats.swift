@@ -8,32 +8,53 @@
 import Foundation
 
 struct SystemStats {
+    /// Retrieves the current total CPU usage percentage of the system.
+    ///
+    /// - Returns: A `Double` representing the CPU usage as a percentage.
+    ///            Returns `-1` if the system call fails.
     static func getCPUUsage() -> Double {
+        // Variable to store the result code from the system call
         var kr: kern_return_t
-        var count = mach_msg_type_number_t(MemoryLayout<host_cpu_load_info_data_t>.stride / MemoryLayout<integer_t>.stride)
+
+        // Number of integer_t values in the host_cpu_load_info_data_t struct
+        var count = mach_msg_type_number_t(
+            MemoryLayout<host_cpu_load_info_data_t>.stride / MemoryLayout<integer_t>.stride
+        )
+
+        // Size of the host_cpu_load_info_data_t struct in bytes
         let size = MemoryLayout<host_cpu_load_info_data_t>.stride
+
+        // Structure to hold the CPU statistics
         var cpuInfo = host_cpu_load_info()
-        
+
+        // Call host_statistics() to fill cpuInfo with CPU usage data
         kr = withUnsafeMutablePointer(to: &cpuInfo) {
             $0.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
                 host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, $0, &count)
             }
         }
-        
+
+        // If the system call failed, return -1
         if kr != KERN_SUCCESS {
             return -1
         }
-        
-        let user = Double(cpuInfo.cpu_ticks.0)
-        let system = Double(cpuInfo.cpu_ticks.1)
-        let idle = Double(cpuInfo.cpu_ticks.2)
-        let nice = Double(cpuInfo.cpu_ticks.3)
-        
+
+        // Extract individual CPU tick counts and convert them to Double
+        let user   = Double(cpuInfo.cpu_ticks.0) // Time spent on user processes
+        let system = Double(cpuInfo.cpu_ticks.1) // Time spent on system (kernel) processes
+        let idle   = Double(cpuInfo.cpu_ticks.2) // Idle time
+        let nice   = Double(cpuInfo.cpu_ticks.3) // Time spent on low-priority processes
+
+        // Calculate total number of CPU ticks
         let totalTicks = user + system + idle + nice
+
+        // Calculate total used CPU time (everything except idle)
         let totalUsed = totalTicks - idle
-        
+
+        // Return CPU usage as a percentage of total time
         return (totalUsed / totalTicks) * 100
     }
+
     
     /// Retrieves the current memory usage percentage of the system.
     ///
