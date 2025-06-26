@@ -25,7 +25,6 @@ struct StatsDetailView: View {
                 Text("Free: ")
                 + Text(String(format: "%.2f GB", disk.free / (1024*1024*1024)))
                     .foregroundColor(disk.free >= 10 ? .green : .red)
-                //+ Text(", Total: \(String(format: "%.2f GB", disk.total / (1024*1024*1024)))")
             } else {
                 Text("Disk: N/A")
             }
