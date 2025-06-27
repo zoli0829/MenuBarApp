@@ -1,10 +1,3 @@
-//
-//  AppDelegate.swift
-//  MenuBarApp
-//
-//  Created by Zoltan Vegh on 25/06/2025.
-//
-
 import Cocoa
 import SwiftUI
 
