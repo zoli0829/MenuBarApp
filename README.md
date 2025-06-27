@@ -15,13 +15,10 @@ It’s built with Swift, SwiftUI, and AppKit (via AppDelegate) for seamless inte
 ![Screenshot of RisenWiki app](images/screenshotSystemStats.png)
 
 ## Features
-Live system stats in your macOS menu bar
-
-Simple, clean text display — no popovers or windows
-
-Native macOS APIs for accurate system data
-
-Lightweight and efficient (no external dependencies)
+- Live system stats in your macOS menu bar
+- Simple, clean text display — no popovers or windows
+- Native macOS APIs for accurate system data
+- Lightweight and efficient (no external dependencies)
 
 ## Tech Stack
 
