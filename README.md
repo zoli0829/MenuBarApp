@@ -25,6 +25,3 @@ It’s built with Swift, SwiftUI, and AppKit (via AppDelegate) for seamless inte
 - **Language:** Swift 
 - **UI Framework:** SwiftUI, AppKit (NSStatusItem)
 - macOS host_statistics APIs
-
-## Usage
-This project is for personal and portfolio use only — it is not distributed via the App Store.
