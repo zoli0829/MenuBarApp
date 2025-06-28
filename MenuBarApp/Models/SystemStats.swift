@@ -116,6 +116,8 @@ struct SystemStats {
         
         return nil
     }
+    
+    // Originally I wanted to include a function to read the GPU usage, but I couldn't figure out how.
 }
 
 
